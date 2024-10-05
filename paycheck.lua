@@ -33,16 +33,29 @@ function StartPayCheck()
                 local jobLabel = xPlayer.job.label
                 local salary = xPlayer.job.grade_salary
                 local group = xPlayer.getGroup()
+                local multiplier, icon, iconColor, groupLabel = getMultiplierAndIcon(player)
 
                 if salary > 0 then
                     local notificationText
-                    local multiplier, icon, iconColor, groupLabel = getMultiplierAndIcon(player)
 
                     if xPlayer.job.grade_name == "unemployed" then
                         local payment = salary * multiplier
-                        notificationText = string.format("You have received a government aid of $%d (Multiplier: %.1fx, Group: %s)", payment, multiplier, groupLabel)
+                        if group ~= 'user' then
+                            notificationText = string.format("You have received a government aid of $%d (Multiplier: %.1fx, Group: %s)", payment, multiplier, groupLabel)
+                        else
+                            notificationText = string.format("You have received a government aid of $%d", payment)
+                        end
                         xPlayer.addAccountMoney("bank", payment, "Government Aid")
-                        ESX.ShowNotification(notificationText, "success", 140)
+                        
+                        TriggerClientEvent("esx:showAdvancedNotification", player, TranslateCap("bank"), TranslateCap("received_paycheck"), notificationText, "CHAR_BANK_MAZE", 9)
+
+                        if Config.LogPaycheck then
+                            ESX.DiscordLogFields("Paycheck", "Paycheck - Unemployment Benefits", "green", {
+                                { name = "Player", value = xPlayer.name, inline = true },
+                                { name = "ID", value = xPlayer.source, inline = true },
+                                { name = "Amount", value = payment, inline = true },
+                            })
+                        end
                     else
                         TriggerEvent("esx_society:getSociety", xPlayer.job.name, function(society)
                             if society then
@@ -56,21 +69,38 @@ function StartPayCheck()
                                         end
                                         xPlayer.addAccountMoney("bank", payment, "Salary")
                                         account.removeMoney(salary)
+
+                                        if Config.LogPaycheck then
+                                            ESX.DiscordLogFields("Paycheck", "Paycheck - " .. jobLabel, "green", {
+                                                { name = "Player", value = xPlayer.name, inline = true },
+                                                { name = "ID", value = xPlayer.source, inline = true },
+                                                { name = "Amount", value = payment, inline = true },
+                                            })
+                                        end
+
+                                        TriggerClientEvent("esx:showAdvancedNotification", player, TranslateCap("bank"), TranslateCap("received_paycheck"), notificationText, "CHAR_BANK_MAZE", 9)
                                     else
                                         notificationText = string.format("The company %s does not have enough money to pay you.", jobLabel)
-                                        icon = 'sack-xmark'
+                                        TriggerClientEvent("esx:showAdvancedNotification", player, TranslateCap("bank"), TranslateCap("error"), notificationText, "CHAR_BANK_MAZE", 1)
                                     end
-
-                                    ESX.ShowNotification(notificationText, "error", 140)
                                 end)
                             else
+                                local payment = salary * multiplier
                                 if group ~= 'user' then
                                     notificationText = string.format("You have received a salary of $%d from a generic job (Multiplier: %.1fx, Group: %s)", salary, multiplier, groupLabel)
                                 else
                                     notificationText = string.format("You have received a salary of $%d from a generic job", salary)
                                 end
                                 xPlayer.addAccountMoney("bank", salary, "Salary")
-                                ESX.ShowNotification(notificationText, "info", 140)
+                                TriggerClientEvent("esx:showAdvancedNotification", player, TranslateCap("bank"), TranslateCap("received_paycheck"), notificationText, "CHAR_BANK_MAZE", 9)
+
+                                if Config.LogPaycheck then
+                                    ESX.DiscordLogFields("Paycheck", "Paycheck - Generic", "green", {
+                                        { name = "Player", value = xPlayer.name, inline = true },
+                                        { name = "ID", value = xPlayer.source, inline = true },
+                                        { name = "Amount", value = salary, inline = true },
+                                    })
+                                end
                             end
                         end)
                     end
