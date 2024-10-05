@@ -61,7 +61,11 @@ function StartPayCheck()
                                 TriggerEvent("esx_addonaccount:getSharedAccount", society.account, function(account)
                                     if account.money >= salary then
                                         local payment = salary * multiplier
-                                        notificationText = string.format("You have received a salary of $%d from the company %s (Multiplier: %.1fx, Group: %s)", payment, jobLabel, multiplier, groupLabel)
+                                        if group ~= 'user' then
+                                            notificationText = string.format("You have received a salary of $%d from the company %s (Multiplier: %.1fx, Group: %s)", payment, jobLabel, multiplier, groupLabel)
+                                        else
+                                            notificationText = string.format("You have received a salary of $%d from the company %s", salary, jobLabel)
+                                        end
                                         xPlayer.addAccountMoney("bank", payment, "Salary")
                                         account.removeMoney(salary)
                                     else
@@ -72,7 +76,11 @@ function StartPayCheck()
                                     ESX.ShowNotification(notificationText, "error", 140)
                                 end)
                             else
-                                notificationText = string.format("You have received a salary of $%d from a generic job (Multiplier: %.1fx, Group: %s)", salary, multiplier, groupLabel)
+                                if group ~= 'user' then
+                                    notificationText = string.format("You have received a salary of $%d from a generic job (Multiplier: %.1fx, Group: %s)", salary, multiplier, groupLabel)
+                                else
+                                    notificationText = string.format("You have received a salary of $%d from a generic job", salary)
+                                end
                                 xPlayer.addAccountMoney("bank", salary, "Salary")
                                 ESX.ShowNotification(notificationText, "info", 140)
                             end
