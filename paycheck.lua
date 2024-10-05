@@ -50,7 +50,7 @@ function StartPayCheck()
                     local notificationText
                     local multiplier, icon, iconColor, groupLabel = getMultiplierAndIcon(player)
 
-                    if xPlayer.job.grade_name == "rsa" then
+                    if xPlayer.job.grade_name == "unemployed" then
                         local payment = salary * multiplier
                         notificationText = string.format("You have received a government aid of $%d (Multiplier: %.1fx, Group: %s)", payment, multiplier, groupLabel)
                         xPlayer.addAccountMoney("bank", payment, "Government Aid")
